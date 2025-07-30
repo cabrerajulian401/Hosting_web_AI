@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Share2, Clock, TrendingUp, Eye, Settings, ChevronDown, Search } from "lucide-react";
+import { ArrowLeft, Share2, Clock, TrendingUp, Eye, Settings, ChevronDown, Search, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -493,8 +493,8 @@ export default function ArticlePage() {
             {/* Expandable Sections */}
             <div className="space-y-6 mt-8">
               <ExpandableSection
-                title="Raw Facts"
-                icon="database"
+                title="Raw Info"
+                icon="document"
                 content={
                   <div className="mt-4 space-y-8">
                     {/* Check if dummy mode is enabled */}
@@ -910,7 +910,7 @@ export default function ArticlePage() {
                           <div key={index} className="border-b border-gray-200 pb-8">
                             <h3 className="font-semibold text-black mb-6 text-xl">{perspective.viewpoint}</h3>
                             
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                            <div className="grid grid-cols-1 lg:grid-cols-[4fr_1fr_4fr] gap-6">
                               {/* Position A */}
                               <div className="space-y-4">
                                 <div className="flex items-center space-x-3">
@@ -925,21 +925,23 @@ export default function ArticlePage() {
                               </div>
                               
                               {/* VS Separator */}
-                              <div className="flex items-center justify-center lg:justify-start">
+                              <div className="flex items-center justify-start lg:justify-center">
                                 <span className="text-gray-400 text-2xl font-bold">VS</span>
                               </div>
                               
                               {/* Position B */}
-                              <div className="space-y-4 lg:col-start-2 lg:row-start-1">
+                              <div className="space-y-4">
                                 <div className="flex items-center space-x-3">
                                   <div className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm font-bold">B</div>
                                   <a href={perspective.conflictUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
                                     <span className="font-semibold text-black text-sm uppercase tracking-wide">{perspective.conflictSource}</span>
                                   </a>
                                 </div>
-                                <p className="text-gray-600 italic mt-2">
-                                  "{perspective.conflictQuote}"
-                                </p>
+                                <div className="border-l-4 border-gray-400 pl-4">
+                                  <p className="text-gray-600 italic mt-2">
+                                    "{perspective.conflictQuote}"
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1109,6 +1111,13 @@ export default function ArticlePage() {
             <div className="border-t-2 border-gray-300 my-6"></div>
             <CitedSources sources={TextFormatter.formatCitedSources(citedSources)} />
             <div className="border-t-2 border-gray-300 my-6"></div>
+          </div>
+          { /* Disclaimer */}
+          <div className="lg:col-span-8 flex items-center">
+            <TriangleAlert className="h-8 w-8 mr-2 fill-yellow-300" />
+            <p className="text-sm text-gray-500">
+              <strong>TIMIO's AI can make mistakes.</strong> Always verify with original sources.
+            </p>
           </div>
         </div>
       </main>
