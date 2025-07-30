@@ -4,6 +4,7 @@ import json
 import uuid
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional, TypedDict, Annotated
 from langchain_tavily import TavilySearch
@@ -432,6 +433,22 @@ hot_topics_manager = HotTopicsManager()
 
 # FastAPI endpoints
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",  # Vite dev server
+        "http://localhost:3000",  # Alternative dev port
+        "https://web-ai-dze2.vercel.app",  # Your Vercel domain
+        "https://*.vercel.app",  # All Vercel domains
+        "https://*.onrender.com",  # All Render domains
+        "*"  # Allow all origins in development (remove in production)
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/api/feed")
 def get_feed():
