@@ -121,13 +121,17 @@ export default function ArticlePage() {
   const { data: articleData, error, isLoading } = useQuery({
     queryKey: [`/api/article/${slug}`],
     queryFn: async () => {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+      
       // If dummy mode is enabled, always return the original dummy article
       if (useDummyMode) {
-        return fetch('/api/article/one-big-beautiful-bill-trump-2025').then(res => res.json());
+        const url = API_BASE_URL ? `${API_BASE_URL}/api/article/one-big-beautiful-bill-trump-2025` : '/api/article/one-big-beautiful-bill-trump-2025';
+        return fetch(url).then(res => res.json());
       }
       
       // Otherwise use the actual slug
-      return fetch(`/api/article/${slug}`).then(res => res.json());
+      const url = API_BASE_URL ? `${API_BASE_URL}/api/article/${slug}` : `/api/article/${slug}`;
+      return fetch(url).then(res => res.json());
     },
     enabled: !!slug,
   });
