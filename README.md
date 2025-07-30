@@ -7,7 +7,7 @@ A React-based frontend for the Web-AI research application.
 ### Frontend (Vercel)
 1. Connect your GitHub repository to Vercel
 2. Set the following environment variables in Vercel:
-   - `VITE_API_URL`: Your backend API URL (e.g., `https://hosting-web-ai-1.onrender.com`)
+   - `VITE_API_URL`: Your backend API URL (e.g., `https://hosting-web-ai-2.onrender.com`)
 3. Deploy - Vercel will automatically build and deploy your frontend
 
 **Important**: Make sure your backend is deployed and accessible before deploying the frontend!
