@@ -25,7 +25,7 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "https://web-ai-v4vh.onrender.com",
+        target: "https://hosting-web-ai-1.onrender.com",
         changeOrigin: true,
       },
     }
