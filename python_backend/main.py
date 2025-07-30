@@ -899,12 +899,15 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",  # Vite dev server
         "http://localhost:3000",  # Alternative dev port
+        "http://localhost:8080",  # Alternative dev port
         "https://web-ai-dze2.vercel.app",  # Your Vercel domain
         "https://web-ai-dze2-m4v627xld-cabrerajulian401s-projects.vercel.app",  # Your specific Vercel domain
+        "https://web-ai-dze2-git-main-cabrerajulian401s-projects.vercel.app",  # Another Vercel domain
         "https://*.vercel.app",  # All Vercel domains
         "https://*.onrender.com",  # All Render domains
+        "*"  # Allow all origins (for development/testing)
     ],
-    allow_credentials=True,
+    allow_credentials=False,  # Changed to False to work with wildcard
     allow_methods=["*"],
     allow_headers=["*"],
 )
