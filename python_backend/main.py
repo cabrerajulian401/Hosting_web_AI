@@ -900,9 +900,9 @@ app.add_middleware(
         "http://localhost:5173",  # Vite dev server
         "http://localhost:3000",  # Alternative dev port
         "https://web-ai-dze2.vercel.app",  # Your Vercel domain
+        "https://web-ai-dze2-m4v627xld-cabrerajulian401s-projects.vercel.app",  # Your specific Vercel domain
         "https://*.vercel.app",  # All Vercel domains
         "https://*.onrender.com",  # All Render domains
-        "*"  # Allow all origins in development (remove in production)
     ],
     allow_credentials=True,
     allow_methods=["*"],
