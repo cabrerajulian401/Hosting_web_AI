@@ -132,6 +132,9 @@ export default function ArticlePage() {
       // Otherwise use the actual slug
       const url = API_BASE_URL ? `${API_BASE_URL}/api/article/${slug}` : `/api/article/${slug}`;
       return fetch(url).then(res => res.json());
+
+      console.log(`Article Successfully fetched`)
+      console.log(`Fetch took: ${endTime - startTime} ms --`)
     },
     enabled: !!slug,
   });
