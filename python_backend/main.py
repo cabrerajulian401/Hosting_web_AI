@@ -1051,6 +1051,41 @@ def get_feed():
 def read_root():
     return {"message": "Welcome to the Research Agent API"}
 
+@app.get("/api/server-time")
+async def get_server_time():
+    global last_server_refresh
+    
+    current_time = datetime.now()
+    current_hour = current_time.hour
+    current_minute = current_time.minute
+    
+    # Set refresh time (e.g., 2:00 AM every day)
+    REFRESH_HOUR = 2
+    REFRESH_MINUTE = 0
+    
+    # Check if it's refresh time
+    should_refresh = False
+    if (current_hour == REFRESH_HOUR and 
+        current_minute < 5 and  # 5-minute window
+        (last_server_refresh is None or 
+         current_time.date() > last_server_refresh.date())):
+        
+        should_refresh = True
+        last_server_refresh = current_time
+        print(f"🔄 Server refresh triggered at {current_time}")
+        
+        # Clear the cache to force fresh data
+        report_cache.clear()
+        print(f"🧹 Cache cleared - {len(report_cache)} articles removed")
+    
+    return {
+        "timestamp": current_time.isoformat(),
+        "shouldRefresh": should_refresh,
+        "nextRefresh": f"{REFRESH_HOUR:02d}:{REFRESH_MINUTE:02d}",
+        "currentHour": current_hour,
+        "currentMinute": current_minute
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000) 

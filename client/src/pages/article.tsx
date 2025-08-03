@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Share2, Clock, TrendingUp, Eye, Settings, ChevronDown, Search, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,6 +38,7 @@ export default function ArticlePage() {
   const [, setLocation] = useLocation();
   const [showThemeController, setShowThemeController] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
 
   // Helper function to find URL for a source name
   const findSourceUrl = (sourceName: string, citedSources: CitedSource[]): string | null => {
@@ -134,53 +135,47 @@ export default function ArticlePage() {
       return fetch(url).then(res => res.json());
     },
     enabled: !!slug,
-    // Universal 24-hour refresh configuration
-    staleTime: 0, // Always consider data stale to allow manual refresh control
-    refetchOnMount: true, // Refetch when component mounts
+    // Server-controlled caching - let server decide when to refresh
+    staleTime: 0, // Always check with server
+    gcTime: 24 * 60 * 60 * 1000, // Keep in cache for 24 hours
+    refetchOnMount: true, // Always refetch on mount to check server
     refetchOnWindowFocus: false, // Don't refetch on window focus
-    refetchOnReconnect: false, // Don't refetch on reconnect
+    refetchOnReconnect: true, // Refetch on reconnect
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  // Universal 24-hour refresh mechanism
+  // Server-synchronized refresh mechanism
   useEffect(() => {
-    const UNIVERSAL_REFRESH_KEY = 'universal-article-refresh';
-    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    
-    const checkAndTriggerUniversalRefresh = () => {
-      const lastRefreshTime = localStorage.getItem(UNIVERSAL_REFRESH_KEY);
-      const currentTime = Date.now();
-      
-      // If no previous refresh or 24 hours have passed
-      if (!lastRefreshTime || (currentTime - parseInt(lastRefreshTime)) > TWENTY_FOUR_HOURS) {
-        console.log('🔄 Triggering universal 24-hour article refresh');
+    const checkServerRefresh = async () => {
+      try {
+        // Get server time to sync refresh
+        const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+        const serverTimeUrl = API_BASE_URL ? `${API_BASE_URL}/api/server-time` : '/api/server-time';
         
-        // Invalidate all article queries to force refresh
-        // Assuming queryClient is available globally or passed as a prop
-        // For now, we'll just log the refresh attempt
-        // If queryClient is not available, this will not work as intended
-        // A proper implementation would involve a queryClient instance
-        // For this example, we'll just log the attempt.
-        // In a real app, you'd have a queryClient instance.
-        // queryClient.invalidateQueries({ 
-        //   queryKey: [/^\/api\/article/] 
-        // });
+        const response = await fetch(serverTimeUrl);
+        const serverData = await response.json();
         
-        // Update the last refresh timestamp
-        localStorage.setItem(UNIVERSAL_REFRESH_KEY, currentTime.toString());
+        // Check if server indicates it's refresh time
+        if (serverData.shouldRefresh) {
+          console.log('🔄 Server indicates refresh time - invalidating queries');
+          queryClient.invalidateQueries({ 
+            queryKey: [/^\/api\/article/] 
+          });
+        }
+      } catch (error) {
+        console.log('Could not check server refresh time:', error);
       }
     };
     
-    // Check on component mount
-    checkAndTriggerUniversalRefresh();
+    // Check on mount
+    checkServerRefresh();
     
-    // Set up interval to check every hour (optional, for safety)
-    const hourlyCheck = setInterval(checkAndTriggerUniversalRefresh, 60 * 60 * 1000);
+    // Check every hour for server refresh signals
+    const hourlyCheck = setInterval(checkServerRefresh, 60 * 60 * 1000);
     
-    // Cleanup interval on unmount
     return () => clearInterval(hourlyCheck);
-  }, []);
+  }, [queryClient]);
 
   // Debug logging for conflicting claims
   useEffect(() => {
