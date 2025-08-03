@@ -27,6 +27,9 @@ load_dotenv()
 # A simple dictionary to store generated reports by slug
 report_cache: Dict[str, ResearchReport] = {}
 
+# Add this after the existing global variables
+last_server_refresh = None
+
 # --- Pexels Tool ---
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
 if PEXELS_API_KEY:
@@ -999,9 +1002,32 @@ def get_feed():
     """Returns hot topics as a list of articles for the frontend."""
     print("--- 📢 /API/FEED ENDPOINT HIT ---")
     
-    # Import the hot topics manager from feed.py
+    # Check if it's time for universal refresh
+    current_time = datetime.now()
+    current_hour = current_time.hour
+    current_minute = current_time.minute
+    
+    # Set refresh time (e.g., 2:00 AM every day)
+    REFRESH_HOUR = 2
+    REFRESH_MINUTE = 0
+    
+    # Check if it's refresh time
+    should_refresh = False
+    if (current_hour == REFRESH_HOUR and 
+        current_minute < 5 and  # 5-minute window
+        (last_server_refresh is None or 
+         current_time.date() > last_server_refresh.date())):
+        
+        should_refresh = True
+        last_server_refresh = current_time
+        print(f"🔄 Server refresh triggered at {current_time}")
+        
+        # Clear the cache to force fresh data
+        report_cache.clear()
+        print(f"🧹 Cache cleared - {len(report_cache)} articles removed")
+    
     try:
-        print("--- TRYING TO IMPORT HOT TOPICS MANAGER ---")
+        # Try to import hot topics manager
         from feed import hot_topics_manager
         print("--- SUCCESSFULLY IMPORTED HOT TOPICS MANAGER ---")
         topics_data = hot_topics_manager.get_cached_topics()
@@ -1017,8 +1043,8 @@ def get_feed():
                 "excerpt": topic.get("description", "No description available."),
                 "category": topic.get("category", "General"),
                 "publishedAt": topic.get("generated_at", datetime.now().isoformat()),
-                "readTime": 2,  # Default/fake value
-                "sourceCount": 1,  # Default/fake value
+                "readTime": 2,
+                "sourceCount": 1,
                 "heroImageUrl": topic.get("image_url", "https://images.pexels.com/photos/12345/news-image.jpg"),
                 "authorName": "AI Agent",
                 "authorTitle": "Hot Topics Generator"
