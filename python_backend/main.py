@@ -63,10 +63,10 @@ Executive Summary:
 Short, simple, easy to read, bullet point summary of event in plain English. Don't use complete sentences.
 
 Raw facts:
-1. Determine the raw facts on the topic primary sources ONLY
+1. Determine the raw facts on the topic from reliable sources
 Ex: Direct quote of what exactly was said, literal concrete propositions of a bill or policy from the document in question, statements from those involved, etc.
-Direct data or statements from government documents, public officials, or original press releases, NOT wikipedia. You may go to intermediary sites in your research, but get your data from their sources. No middle man organizations should be cited.
-If your researching a proposed law or bill, include raw facts directly from the document in question. Cite the name of the exact document or speaker they came from, + source
+Direct data or statements from government documents, public officials, original press releases, or reputable news sources. While primary sources are preferred when available, you may also use well-established news outlets and authoritative sources. You may go to intermediary sites in your research, but get your data from their sources when possible.
+If your researching a proposed law or bill, include raw facts directly from the document in question when available. Cite the name of the exact document or speaker they came from, + source
 Places you can find US law text & congress hearings:
 https://www.congress.gov/
 https://www.govinfo.gov/
@@ -272,8 +272,8 @@ def scraper_node(state: AgentState):
         
         if query:
             print(f"--- EXECUTING TAVILY SEARCH for: {query} ---")
-            # Prioritize primary sources: government sites, official documents, direct statements
-            enhanced_query = f"{query} site:gov OR site:congress.gov OR site:whitehouse.gov OR site:govinfo.gov OR official statement OR primary source"
+            # Encourage primary sources but don't require them - include both primary and reputable secondary sources
+            enhanced_query = f"{query} (site:gov OR site:congress.gov OR site:whitehouse.gov OR site:govinfo.gov OR official statement OR primary source OR reputable news OR authoritative source)"
             tavily_results = tavily_tool.invoke(enhanced_query)
             print(f"--- 🔍 TAVILY RESULTS TYPE: {type(tavily_results)} ---")
             if isinstance(tavily_results, str):
@@ -465,7 +465,7 @@ Now, analyze the provided web content to create a concise executive summary with
 def create_raw_facts_agent():
     example_str = json.dumps(example_for_raw_facts, indent=2).replace("{", "{{").replace("}", "}}")
     
-    prompt = f"""You are a specialized raw facts agent focused on extracting direct, verifiable facts from primary sources.
+    prompt = f"""You are a specialized raw facts agent focused on extracting direct, verifiable facts from reliable sources.
 
 Your goal is to identify the most important factual statements from the provided sources.
 
@@ -477,6 +477,7 @@ CONTENT LIMITATIONS:
 - Avoid redundant or similar facts from the same source
 - Prioritize facts that are directly quoted or clearly stated
 - Organize by source, but limit to 6 total facts
+- While primary sources are preferred, you may also use reputable news outlets and authoritative sources
 
 You MUST generate a valid JSON output that strictly follows the structure and field names of the example below.
 Do not add any commentary, explanations, or any text outside of the JSON output.
@@ -486,7 +487,7 @@ Do not add any commentary, explanations, or any text outside of the JSON output.
 {example_str}
 ```
 
-Now, analyze the provided web content to extract the 6 most important raw facts from primary sources.
+Now, analyze the provided web content to extract the 6 most important raw facts from reliable sources.
 """
     return create_agent(llm, [], prompt)
 
