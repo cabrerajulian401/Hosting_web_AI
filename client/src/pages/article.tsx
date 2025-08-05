@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Share2, Clock, TrendingUp, Eye, Settings, ChevronDown, Search, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,6 +38,7 @@ export default function ArticlePage() {
   const [, setLocation] = useLocation();
   const [showThemeController, setShowThemeController] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const queryClient = useQueryClient();
 
   // Helper function to find URL for a source name
   const findSourceUrl = (sourceName: string, citedSources: CitedSource[]): string | null => {
@@ -134,7 +135,47 @@ export default function ArticlePage() {
       return fetch(url).then(res => res.json());
     },
     enabled: !!slug,
+    // Server-controlled caching - let server decide when to refresh
+    staleTime: 0, // Always check with server
+    gcTime: 24 * 60 * 60 * 1000, // Keep in cache for 24 hours
+    refetchOnMount: true, // Always refetch on mount to check server
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnReconnect: true, // Refetch on reconnect
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
+
+  // Server-synchronized refresh mechanism
+  useEffect(() => {
+    const checkServerRefresh = async () => {
+      try {
+        // Get server time to sync refresh
+        const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+        const serverTimeUrl = API_BASE_URL ? `${API_BASE_URL}/api/server-time` : '/api/server-time';
+        
+        const response = await fetch(serverTimeUrl);
+        const serverData = await response.json();
+        
+        // Check if server indicates it's refresh time
+        if (serverData.shouldRefresh) {
+          console.log('🔄 Server indicates refresh time - invalidating queries');
+          queryClient.invalidateQueries({ 
+            queryKey: [/^\/api\/article/] 
+          });
+        }
+      } catch (error) {
+        console.log('Could not check server refresh time:', error);
+      }
+    };
+    
+    // Check on mount
+    checkServerRefresh();
+    
+    // Check every hour for server refresh signals
+    const hourlyCheck = setInterval(checkServerRefresh, 60 * 60 * 1000);
+    
+    return () => clearInterval(hourlyCheck);
+  }, [queryClient]);
 
   // Debug logging for conflicting claims
   useEffect(() => {

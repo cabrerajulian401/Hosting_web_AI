@@ -25,7 +25,7 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "https://hosting-web-ai-2.onrender.com",
+        target: "srv-d27anfs9c44c738ffmm0",
         changeOrigin: true,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
