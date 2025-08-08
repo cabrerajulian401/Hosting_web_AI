@@ -49,7 +49,7 @@ python main.py
 └── attached_assets/        # Static assets
 ```
 
-## 🔧 Environment Variables
+## 🔧 -> Environment Variables
 
 ### Frontend (.env)
 ```
